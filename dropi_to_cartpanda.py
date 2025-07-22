@@ -1,0 +1,47 @@
+import os
+import requests
+from openpyxl import Workbook
+
+CARTPANDA_API_URL = "https://api.cartpanda.com.br/v1/products"
+CARTPANDA_API_TOKEN = os.getenv("CARTPANDA_API_TOKEN")
+
+def criar_produto_cartpanda(produto):
+    headers = {
+        "Authorization": f"Bearer {CARTPANDA_API_TOKEN}",
+        "Content-Type": "application/json"
+    }
+
+    data = {
+        "name": produto["nome"],
+        "description": produto["descricao"],
+        "price": produto["preco"],
+        "stock": 10,
+        "images": [produto["imagem"]],
+        "status": "published"
+    }
+
+    response = requests.post(CARTPANDA_API_URL, json=data, headers=headers)
+    print(f"Produto: {produto['nome']} - Status: {response.status_code}")
+    return response.status_code
+
+def importar_e_enviar():
+    produtos = [
+        {
+            "nome": "Cuba de Banheiro Luxo",
+            "descricao": "Design moderno e resistente. Ideal para banheiros elegantes.",
+            "preco": 199.90,
+            "imagem": "https://link.da.imagem/cuba.jpg"
+        },
+        {
+            "nome": "Jogo de Cama Queen 4 peças",
+            "descricao": "Toque macio, tecido de alta qualidade.",
+            "preco": 129.90,
+            "imagem": "https://link.da.imagem/jogo_cama.jpg"
+        }
+    ]
+
+    for produto in produtos:
+        criar_produto_cartpanda(produto)
+
+if __name__ == "__main__":
+    importar_e_enviar()
