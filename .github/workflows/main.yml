@@ -1,53 +1,27 @@
-import os
-import requests
-from dotenv import load_dotenv
+name: run-script
 
-# Carrega variáveis do arquivo .env
-load_dotenv()
+on:
+  workflow_dispatch:
 
-CARTPANDA_API_URL = "https://api.cartpanda.com.br/v1/products"
-CARTPANDA_API_TOKEN = os.getenv("CARTPANDA_API_TOKEN")
+jobs:
+  build:
+    runs-on: ubuntu-latest
 
-def criar_produto_cartpanda(produto):
-    headers = {
-        "Authorization": f"Bearer {CARTPANDA_API_TOKEN}",
-        "Content-Type": "application/json"
-    }
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v3
 
-    data = {
-        "name": produto["nome"],
-        "description": produto["descricao"],
-        "price": produto["preco"],
-        "stock": 10,
-        "images": [produto["imagem"]],
-        "status": "published"
-    }
+      - name: Configurar Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.10
 
-    response = requests.post(CARTPANDA_API_URL, json=data, headers=headers)
+      - name: Instalar dependências
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
-    if response.status_code == 201:
-        print(f"✅ Produto '{produto['nome']}' criado com sucesso!")
-    else:
-        print(f"❌ Erro ao criar '{produto['nome']}': {response.status_code} - {response.text}")
-
-def importar_e_enviar():
-    produtos = [
-        {
-            "nome": "Cuba de Banheiro Luxo",
-            "descricao": "Design moderno e resistente. Ideal para banheiros elegantes.",
-            "preco": 199.90,
-            "imagem": "https://link-da-imagem/cuba.jpg"
-        },
-        {
-            "nome": "Jogo de Cama Queen 4 peças",
-            "descricao": "Toque macio, tecido de alta qualidade.",
-            "preco": 129.90,
-            "imagem": "https://link-da-imagem/jogo-cama.jpg"
-        }
-    ]
-
-    for produto in produtos:
-        criar_produto_cartpanda(produto)
-
-if __name__ == "__main__":
-    importar_e_enviar()
+      - name: Rodar script
+        env:
+          CARTPANDA_API_TOKEN: ${{ secrets.CARTPANDA_API_TOKEN }}
+        run: python dropi_to_cartpanda.py
